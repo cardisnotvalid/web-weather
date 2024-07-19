@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+  </head>
+  <body>
+    <form autocomplete="off" action="{{ url_for('get_weather') }}" method="get">
+      <div class="autocomplete" width=300>
+        <input type="text" id="city" name="city" placeholder="Город">
+        <div id="autocomplete-list" class="autocomplete-items"></div>
+      </div>
+      <input type="submit" value="Submit">
+    </form>
+    <div id="weather-info" class="weather-info hidden">
+      <div class="location">
+        <h2 id="location-name"></h2>
+        <p id="location-time"></p>
+      </div>
+      <div class="current-weather">
+        <img id="weather-icon" src="" alt="Weather icon">
+        <div class="details">
+          <p id="temperature"></p>
+          <p id="condition"></p>
+          <p id="wind"></p>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', path='/index.js') }}"></script>
+  </body>
+</html>
