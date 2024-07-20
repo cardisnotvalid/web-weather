@@ -18,6 +18,16 @@ async def get_weather(city: str, days: int = 7, api: WeatherAPI = Depends(get_we
     return response
 
 
+@router.options("/weather")
+async def options_weather():
+    headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "OPTIONS, GET",
+        "Access-Control-Allow-Headers": "*",
+    }
+    return JSONResponse(content={}, headers=headers)
+
 @router.get("/complete")
 async def auto_complete(q: str, api: WeatherAPI = Depends(get_weather_api)):
     return await api.auto_complete(q)
