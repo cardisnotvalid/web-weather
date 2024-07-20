@@ -1,11 +1,45 @@
 document.addEventListener("DOMContentLoaded", function() {
+    const weatherBtn = document.getElementById("weather-btn");
+    const lastCityBtn = document.getElementById("last-city-btn");
     const cityInput = document.getElementById("city");
+    const windDirMap = {
+        "N": "С",
+        "NNE": "ССВ",
+        "NE": "СВ",
+        "ENE": "ВСВ",
+        "E": "В",
+        "ESE": "ВЮВ",
+        "SE": "ЮВ",
+        "SSE": "ЮЮВ",
+        "S": "Ю",
+        "SSW": "ЮЮЗ",
+        "SW": "ЮЗ",
+        "WSW": "ЗЮЗ",
+        "W": "З",
+        "WNW": "ЗСЗ",
+        "NW": "СЗ",
+        "NNW": "ССЗ"
+    };
     let currentFocus = -1;
 
+    weatherBtn.addEventListener("click", handleSearch);
+    lastCityBtn.addEventListener("click", handleLastCity);
     cityInput.addEventListener("input", handleInput);
     cityInput.addEventListener("keydown", handleKeydown);
     document.addEventListener("click", handleClickOutside);
     document.addEventListener("keydown", handleShortcut);
+
+    function handleSearch() {
+        const city = cityInput.value;
+        if (city) {
+            fetchWeatherData(`/api/weather?city=${encodeURIComponent(city)}`);
+        }
+    }
+
+    function handleLastCity() {
+        const city = lastCityBtn.innerText;
+        fetchWeatherData(`/api/weather?city=${encodeURIComponent(city)}`);
+    }
 
     function handleInput() {
         const query = this.value;
@@ -15,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return false;
         }
 
-        fetch(`/complete?q=${query}`)
+        fetch(`/api/complete?q=${query}`)
             .then(response => response.json())
             .then(data => {
                 closeAllLists();
@@ -57,12 +91,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function renderSuggestions(data) {
         const autocompleteList = document.getElementById("autocomplete-list");
+        autocompleteList.hidden = false;
 
         data.forEach(item => {
             const suggestion = document.createElement("div");
             suggestion.innerHTML = `<strong>${item.name}</strong> - ${item.region}, ${item.country}`;
-            suggestion.innerHTML += `<input type='hidden' value='${item.name}'>`;
-            suggestion.innerHTML += `<input type='hidden' value='/weather?city=${item.name}'>`;
+            suggestion.innerHTML += `<input type="hidden" value="${item.name}">`;
+            suggestion.innerHTML += `<input type="hidden" value="/api/weather?city=${item.name}">`;
 
             suggestion.addEventListener("click", function() {
                 const selectedCity = this.getElementsByTagName("input")[0].value;
@@ -95,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function() {
             autocompleteList.removeChild(autocompleteList.firstChild);
         }
         currentFocus = -1;
+        autocompleteList.hidden = true;
     }
 
     function fetchWeatherData(url) {
@@ -107,12 +143,51 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function displayWeatherInfo(data) {
         const weatherInfo = document.getElementById("weather-info");
-        document.getElementById("location-name").innerText = `${data.location.name}, ${data.location.region}, ${data.location.country}`;
-        document.getElementById("location-time").innerText = `Местное время: ${data.location.localtime}`;
+        const windDirection = windDirMap[data.current.wind_dir] || data.current.wind_dir;
+
+        const localTimeEpoch = data.location.localtime_epoch * 1000;
+        const localTime = new Date(localTimeEpoch);
+
+        const formattedTime = localTime.toLocaleString("ru-RU", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric"
+        });
+
+        document.getElementById("location-name").innerText = `${data.location.name}, ${data.location.country}`;
+        document.getElementById("location-time").innerText = formattedTime;
         document.getElementById("weather-icon").src = data.current.condition.icon;
         document.getElementById("temperature").innerText = `Температура: ${data.current.temp_c}°C`;
-        document.getElementById("condition").innerText = `Погодные условия: ${data.current.condition.text}`;
-        document.getElementById("wind").innerText = `Ветер: ${data.current.wind_kph} км/ч ${data.current.wind_dir}`;
+        document.getElementById("condition").innerText = `Состояние: ${data.current.condition.text}`;
+        document.getElementById("wind").innerText = `Ветер: ${data.current.wind_kph} км/ч ${windDirection}`;
+
+        renderWeeklyForecast(data.forecast.forecastday);
         weatherInfo.classList.remove("hidden");
+    }
+
+    function renderWeeklyForecast(forecastDays) {
+        const weeklyForecast = document.getElementById("weekly-forecast");
+        weeklyForecast.innerHTML = "";
+
+        forecastDays.forEach(day => {
+            const dayForecast = document.createElement("div");
+            dayForecast.classList.add("day-forecast");
+
+            const date = new Date(day.date);
+            const options = { weekday: "long", month: "long", day: "numeric" };
+            const formattedDate = date.toLocaleDateString("ru-RU", options);
+
+            dayForecast.innerHTML = `
+                <div class="date">${formattedDate}</div>
+                <img src="${day.day.condition.icon}" alt="Weather icon">
+                <div class="temp">${day.day.maxtemp_c}°C / ${day.day.mintemp_c}°C</div>
+                <div class="condition">${day.day.condition.text}</div>
+            `;
+
+            weeklyForecast.appendChild(dayForecast);
+        });
     }
 });

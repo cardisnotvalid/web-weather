@@ -2,17 +2,22 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8">
-    <title>Weather App</title>
+    <title>Прогноз погоды</title>
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
   </head>
   <body>
-    <form autocomplete="off" action="{{ url_for('get_weather') }}" method="get">
-      <div class="autocomplete" width=300>
+    {% if last_city %}
+    <div id="last-city">
+        Последнее: <button id="last-city-btn">{{ last_city }}</button>
+    </div>
+    {% endif %}
+    <div id="weather-form">
+      <div class="autocomplete">
         <input type="text" id="city" name="city" placeholder="Город">
-        <div id="autocomplete-list" class="autocomplete-items"></div>
+        <div id="autocomplete-list" class="autocomplete-items" hidden></div>
       </div>
-      <input type="submit" value="Submit">
-    </form>
+      <button id="weather-btn">Поиск</button>
+    </div>
     <div id="weather-info" class="weather-info hidden">
       <div class="location">
         <h2 id="location-name"></h2>
@@ -26,6 +31,7 @@
           <p id="wind"></p>
         </div>
       </div>
+      <div id="weekly-forecast" class="weekly-forecast"></div>
     </div>
     <script src="{{ url_for('static', path='/index.js') }}"></script>
   </body>
