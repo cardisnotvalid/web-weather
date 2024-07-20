@@ -22,10 +22,19 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     let currentFocus = -1;
 
-    weatherBtn.addEventListener("click", handleSearch);
-    lastCityBtn.addEventListener("click", handleLastCity);
-    cityInput.addEventListener("input", handleInput);
-    cityInput.addEventListener("keydown", handleKeydown);
+    if (weatherBtn) {
+        weatherBtn.addEventListener("click", handleSearch);
+    }
+
+    if (lastCityBtn) {
+        lastCityBtn.addEventListener("click", handleLastCity);
+    }
+
+    if (cityInput) {
+        cityInput.addEventListener("input", handleInput);
+        cityInput.addEventListener("keydown", handleKeydown);
+    }
+
     document.addEventListener("click", handleClickOutside);
     document.addEventListener("keydown", handleShortcut);
 
