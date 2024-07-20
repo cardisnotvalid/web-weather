@@ -1,3 +1,5 @@
+![preview](assets/preview.png)
+
 ## Задачи
 
 ### Основные
